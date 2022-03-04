@@ -1,0 +1,128 @@
+Q1)  CREATE TABLE new_table LIKE original_table;
+     INSERT INTO new_table SELECT * FROM original_table;
+   
+Q2)  CREATE TABLE new_table SELECT * FROM original_table;
+
+Q3) a) Assuming there are some 15 student records in the table
+
+     SELECT * FROM (
+     SELECT * FROM STUDENT ORDER BY id DESC LIMIT 10
+     )Var1
+     ORDER BY id ASC;
+    
+     b)SELECT MAX(salary), MIN(salary) 
+       FROM employees;
+
+
+Q4)user_transaction_template = '''
+select 
+    user_id
+    , count(*) as num_transactions
+    , sum(amount) as total_amount
+from 
+    transactions
+where
+    user_id = 1234
+    and transaction_date = '2022-03-02'
+group by
+    user_id
+'''
+params = {
+    'user_id': 1234,
+    'transaction_date': '2022-03-02'
+}
+j = JinjaSql(param_style='pyformat')
+query,bind_params = j.prepare_query(user_transaction_template,params)
+print(query)
+
+
+
+Q5)SELECT * FROM department WHERE NAME LIKE 'P%';
+   SELECT * FROM department WHERE SURNAME LIKE 'S%';
+
+
+
+Q6)SELECT LAST () FROM STUDENT ;
+
+
+Q7)CREATE TABLE Employees(
+    EmployeeID int NOT NULL PRIMARY KEY,
+    FirstName varchar(50) NOT NULL,
+    LastName varchar(50) NOT NULL,
+    ManagerID int NULL
+)
+
+INSERT INTO Employees VALUES(1,'Siddhant','Sharma',NULL)
+INSERT INTO Employees VALUES(2,'Sri','Harsha',1)
+INSERT INTO Employees VALUES(3,'Antrixsh','gupta',1)
+INSERT INTO Employees VALUES(4,'Prajakta','Sharma',2)
+INSERT INTO Employees VALUES(5,'Govind','Kumar',2)
+INSERT INTO Employees VALUES(6,'Bhargav','Kumar',3)
+INSERT INTO Employees VALUES(7,'Nirupama','Ponnapudi',3)
+INSERT INTO Employees VALUES(8,'Amogh','Kumar',5)
+INSERT INTO Employees VALUES(9,'Vikas','Goyal',6)
+INSERT INTO Employees VALUES(10,'Naga','Sowmya',6)
+
+select *from Employees;
+
+WITH
+    cteReports(EmpID, FirstName, LastName, MgrID, EmpLevel)
+    AS
+    (
+        SELECT EmployeeID, FirstName, LastName, ManagerID,1
+        From Employees
+        Where ManagerID is NULL
+        UNION ALL
+        SELECT e.EmployeeID, e.FirstName, e.LastName, e.ManagerID, r.EmpLevel + 1
+        FROM Employees e 
+            INNER JOIN cteReports r 
+            ON e.ManagerID = r.EmpID
+    )
+
+    SELECT 
+        FirstName + ' ' + LastName AS FullName,
+        EmpLevel,
+        (Select FirstName + ' ' + LastName AS FullName FROM Employees
+            WHERE EmployeeID = cteReports.MgrID) AS ManagerID
+            From cteReports
+            Order BY EmpLevel,MgrID
+
+
+
+Q8)CREATE TABLE NestingTest
+   (
+    NestingTestID INT IDENTITY(1, 1),
+    Test INT NULL
+   );
+
+
+    CREATE OR ALTER TRIGGER TR_IUD_NestingTest ON NestingTest
+FOR INSERT, UPDATE, DELETE
+AS
+DECLARE @Operation VARCHAR(15)
+ 
+IF EXISTS (SELECT 0 FROM inserted)
+BEGIN
+   IF EXISTS (SELECT 0 FROM deleted)
+   BEGIN 
+      SELECT @Operation = 'UPDATE'
+   END 
+END ELSE 
+BEGIN
+   SELECT @Operation = 'DELETE'
+END 
+PRINT @Operation
+
+INSERT INTO dbo.NestingTest
+(Test) VALUES (0);
+ 
+UPDATE dbo.NestingTest
+SET Test = 1
+WHERE NestingTestID = 1;
+ 
+DELETE FROM dbo.NestingTest
+WHERE NestingTestID = 1;
+
+
+
+  
